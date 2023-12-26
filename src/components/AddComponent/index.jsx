@@ -6,6 +6,7 @@ const Index = () => {
   const [inputValue, setInputValue] = useState("");
   const [editingIndex, setEditingIndex] = useState(null);
   const [incompleteTasks, setIncompleteTasks] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [editValue, setEditValue] = useState("");
   const [isEditing, setIsEditing] = useState(false);
 
@@ -19,13 +20,14 @@ const Index = () => {
     }
   };
 
-  const handleDeleteItem = (index) => {
+const handleDeleteItem = (index) => {
+  if (!isEditing) {
     const newItems = [...items];
     newItems.splice(index, 1);
     setItems(newItems);
     localStorage.setItem("items", JSON.stringify(newItems));
-  };
-
+  }
+};
   const handleDeleteAll = () => {
     const newItems = [];
     setItems(newItems);
@@ -42,11 +44,13 @@ const Index = () => {
     localStorage.setItem("items", JSON.stringify(newItems));
   };
 
-  const handleEditItem = (index) => {
+const handleEditItem = (index) => {
+  if (!isDeleting) {
     setEditingIndex(index);
     setEditValue(items[index].text);
     setIsEditing(true);
-  };
+  }
+};
 
   const handleEditChange = (e) => {
     setEditValue(e.target.value);
@@ -73,23 +77,32 @@ const Index = () => {
   }, []);
 
   const handleEditIconClick = (index) => {
+    console.log("index handleEditIconClick", index, editingIndex);
     if (editingIndex === index) {
-      // Nếu đang ở trạng thái chỉnh sửa, thì chuyển về trạng thái không chỉnh sửa
+      console.log("editing Index", editingIndex);
       setEditingIndex(null);
     } else {
-      // Nếu không đang ở trạng thái chỉnh sửa, thì bắt đầu chỉnh sửa
+      console.log("setEditingIndex", editingIndex);
       setEditingIndex(index);
+      console.log("items", items);
       setEditValue(items[index].text);
     }
   };
 
+  const handlecloseInput =()=>{
+     setEditingIndex(1);
+  }
+
   const handleTickIconClick = (index) => {
     // Khi nhấn vào ảnh thứ hai (tick) trong trạng thái chỉnh sửa, cập nhật nội dung và chuyển về trạng thái không chỉnh sửa
     const newItems = [...items];
-    newItems[index].text = editValue; // Cập nhật nội dung mới
-    setItems(newItems);
+        console.log("text", index);
+        console.log("newItems", newItems);
+    // newItems[index].text = editValue; // Cập nhật nội dung mới
+    // setItems(newItems);
     localStorage.setItem("items", JSON.stringify(newItems));
     setEditingIndex(null); // Kết thúc chỉnh sửa
+
   };
 
   return (
@@ -160,8 +173,10 @@ const Index = () => {
                   className={styles.img_edit}
                   onClick={() => handleEditIconClick(index)}
                 >
+                  {/* x */}
                   {editingIndex === index ? (
                     <svg
+                      onClick={() => handlecloseInput()}
                       xmlns="http://www.w3.org/2000/svg"
                       height="16"
                       width="14"
@@ -171,7 +186,7 @@ const Index = () => {
                     </svg>
                   ) : (
                     <svg
-                      onClick={() => handleTickIconClick()}
+                      onClick={() => handleTickIconClick(index)}
                       xmlns="http://www.w3.org/2000/svg"
                       height="16"
                       width="16"
@@ -185,7 +200,10 @@ const Index = () => {
                 <div className={styles.img_delete}>
                   {editingIndex === index ? (
                     <svg
-                      onClick={() => handleDeleteItem(index)}
+                      onClick={() => {
+                        setIsDeleting(false);
+                        handleEditItem();
+                      }}
                       xmlns="http://www.w3.org/2000/svg"
                       height="16"
                       width="14"
@@ -195,7 +213,10 @@ const Index = () => {
                     </svg>
                   ) : (
                     <svg
-                      onClick={() => handleEditItem()}
+                      onClick={() => {
+                        setIsDeleting(true);
+                        handleDeleteItem(index);
+                      }}
                       xmlns="http://www.w3.org/2000/svg"
                       height="16"
                       width="14"
